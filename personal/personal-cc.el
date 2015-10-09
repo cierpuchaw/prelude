@@ -5,14 +5,20 @@
 (add-to-list 'auto-mode-alist (cons include-base-dir 'c++-mode))
 
 ;; style settings
-(setq-default indent-tabs-mode nil
-              c-indent-level 2
-              c-default-style "bsd"
-              c-basic-offset 2)
+(defun my-cc-style ()
+  (setq indent-tabs-mode nil
+        c-indent-level 2
+        c-basic-offset 2
+        c-default-style "bsd")
+  )
 
-(custom-set-variables
- '(c-offsets-alist (quote ((innamespace . 0))))
- )
+(add-hook 'cc-mode-hook 'my-cc-style)
+
+(defun my-cxx-style ()
+  (c-set-offset 'innamespace [0])
+  )
+
+(add-hook 'c++-mode-hook 'my-cxx-style)
 
 ;; C++11 keywords
 (font-lock-add-keywords 'c++-mode

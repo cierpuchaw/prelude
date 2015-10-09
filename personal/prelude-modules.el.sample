@@ -11,7 +11,7 @@
 ;; (require 'prelude-evil)
 
 ;;; Programming languages support
-(require 'prelude-c)
+;; (require 'prelude-c) ;; I provide my own settings
 ;; (require 'prelude-clojure)
 ;; (require 'prelude-coffee)
 ;; (require 'prelude-common-lisp)
