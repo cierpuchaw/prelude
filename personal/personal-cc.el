@@ -22,5 +22,5 @@
 
 ;; C++11 keywords
 (font-lock-add-keywords 'c++-mode
-                        '(("\\<\\(constexpr\\|decltype\\|nullptr\\|static_assert\\)\\>"
+                        '(("\\<\\(constexpr\\|decltype\\|nullptr\\|override\\|final\\|static_assert\\)\\>"
                            . font-lock-keyword-face)))
