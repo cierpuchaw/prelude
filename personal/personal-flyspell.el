@@ -1,0 +1,1 @@
+(setq prelude-flyspell nil)
