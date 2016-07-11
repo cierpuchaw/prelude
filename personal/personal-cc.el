@@ -20,7 +20,5 @@
 
 (add-hook 'c++-mode-hook 'my-cxx-style)
 
-;; C++11 keywords
-(font-lock-add-keywords 'c++-mode
-                        '(("\\<\\(constexpr\\|decltype\\|nullptr\\|override\\|final\\|static_assert\\)\\>"
-                           . font-lock-keyword-face)))
+(prelude-require-packages '(modern-cpp-font-lock))
+(add-hook 'c++-mode-hook #'modern-c++-font-lock-mode)
