@@ -1,3 +1,6 @@
+(prelude-require-packages '(company-c-headers
+                            ))
+
 (require 'company)
 (require 'company-c-headers)
 
