@@ -8,6 +8,7 @@
 (add-to-list 'company-backends 'company-c-headers)
 
 (global-set-key [(control return)] 'company-complete)
+(global-set-key (kbd "C-c c") 'company-complete)
 
 ;; silence warning about 'unsafe' variable when setting it through .dir-locals.el
 (put 'company-clang-arguments 'safe-local-variable (lambda (xx) t))
