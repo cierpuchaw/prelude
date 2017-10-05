@@ -5,6 +5,7 @@
 (require 'company-c-headers)
 
 (setq company-backends (delete 'company-semantic company-backends))
+(setq company-backends (delete 'company-clang company-backends))
 (add-to-list 'company-backends 'company-c-headers)
 
 (global-set-key [(control return)] 'company-complete)
