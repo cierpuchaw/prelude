@@ -1,4 +1,5 @@
 (prelude-require-packages '(yasnippet
+                            yasnippet-snippets
                             ))
 
 (require 'yasnippet)
