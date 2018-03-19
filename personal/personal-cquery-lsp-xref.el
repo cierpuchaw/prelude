@@ -1,4 +1,5 @@
 (prelude-require-packages '(lsp-mode
+                            lsp-ui
                             company-lsp
                             helm-xref
                             cquery
@@ -16,8 +17,9 @@
 
 (require 'lsp-imenu)
 (add-hook 'lsp-after-open-hook 'lsp-enable-imenu)
-(with-eval-after-load 'lsp-mode
-  (require 'lsp-flycheck))
+
+(require 'lsp-ui)
+(add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
 (require 'helm-xref)
 (setq xref-show-xrefs-function 'helm-xref-show-xrefs)
