@@ -12,6 +12,7 @@
   (add-hook 'before-save-hook 'gofmt-before-save nil t)
   (setq tab-width 4)
   (whitespace-toggle-options '(tabs))
+  (setq super-save-exclude '(".go"))
   )
 
 (add-hook 'go-mode-hook #'my-go-setup)
