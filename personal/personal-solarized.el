@@ -2,5 +2,5 @@
                             ))
 
 (disable-theme 'zenburn)
-(setq prelude-theme 'solarized-dark)
+(setq prelude-theme 'solarized-zenburn)
 (load-theme prelude-theme t)

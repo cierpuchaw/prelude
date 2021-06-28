@@ -4,6 +4,14 @@
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-to-list 'auto-mode-alist (cons include-base-dir 'c++-mode))
 
+(defun my-cc-whitespace ()
+  (whitespace-toggle-options '(tabs tab-mark))
+  )
+
+;; doesn't work when added to cc-mode-hook
+(add-hook 'c++-mode-hook 'my-cc-whitespace)
+(add-hook 'c-mode-hook 'my-cc-whitespace)
+
 ;; style settings
 (defun my-cc-style ()
   (setq indent-tabs-mode nil
