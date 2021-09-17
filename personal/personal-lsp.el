@@ -29,3 +29,12 @@
 
 (add-hook 'c-mode-common-hook #'lsp)
 (add-hook 'go-mode-hook #'lsp)
+
+(setq lsp-clients-clangd-args
+      '("-j=2"
+        "--background-index"
+        "--clang-tidy"
+        "--completion-style=bundled"
+        "--pch-storage=memory"
+        "--header-insertion=never"
+        "--header-insertion-decorators=0"))

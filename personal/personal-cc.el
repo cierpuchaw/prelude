@@ -5,6 +5,7 @@
 (add-to-list 'auto-mode-alist (cons include-base-dir 'c++-mode))
 
 (defun my-cc-whitespace ()
+  (setq tab-width 4)
   (whitespace-toggle-options '(tabs tab-mark))
   )
 
