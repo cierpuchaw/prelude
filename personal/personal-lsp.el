@@ -29,6 +29,7 @@
 
 (add-hook 'c-mode-common-hook #'lsp)
 (add-hook 'go-mode-hook #'lsp)
+(add-hook 'rust-mode-hook #'lsp)
 
 (setq lsp-clients-clangd-args
       '("-j=2"
