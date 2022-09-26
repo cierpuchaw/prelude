@@ -28,6 +28,3 @@
   )
 
 (add-hook 'c++-mode-hook 'my-cxx-style)
-
-(prelude-require-packages '(modern-cpp-font-lock))
-(add-hook 'c++-mode-hook #'modern-c++-font-lock-mode)
