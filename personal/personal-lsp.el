@@ -31,7 +31,8 @@
 (setq lsp-ui-peek-enable t)
 (setq lsp-ui-peek-always-show t)
 
-(add-hook 'c-mode-common-hook #'lsp)
+(add-hook 'c-mode-hook #'lsp)
+(add-hook 'c++-mode-hook #'lsp)
 (add-hook 'go-mode-hook #'lsp)
 (add-hook 'rust-mode-hook #'lsp)
 
