@@ -1,6 +1,12 @@
-(prelude-require-packages '(tree-sitter
-                            tree-sitter-langs))
+(prelude-require-packages '(treesit-auto
+                            ))
 
-(add-hook 'c-mode-hook #'tree-sitter-hl-mode)
-(add-hook 'c++-mode-hook #'tree-sitter-hl-mode)
-(add-hook 'python-mode-hook #'tree-sitter-hl-mode)
+(require 'treesit-auto)
+
+(setq treesit-auto-install 't)
+(global-treesit-auto-mode)
+
+(setq c-ts-mode-hook c-mode-hook)
+(setq c++-ts-mode-hook c++-mode-hook)
+(setq go-ts-mode-hook go-mode-hook)
+(setq rust-ts-mode-hook rust-mode-hook)
