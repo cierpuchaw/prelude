@@ -23,6 +23,7 @@
 (define-key lsp-ui-mode-map (kbd "C-c C-l w") 'lsp-ui-peek-find-workspace-symbol)
 (define-key lsp-ui-mode-map (kbd "C-c C-l i") 'lsp-ui-peek-find-implementation)
 (define-key lsp-ui-mode-map (kbd "C-c C-l d") 'lsp-describe-thing-at-point)
+(define-key lsp-ui-mode-map (kbd "C-c C-l f") 'lsp-format-buffer)
 (define-key lsp-ui-mode-map (kbd "C-c C-l e") 'helm-lsp-code-actions)
 
 (setq lsp-prefer-flymake nil)
