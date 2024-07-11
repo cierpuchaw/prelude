@@ -1,3 +1,6 @@
+(prelude-require-packages '(cmake-mode
+                            ))
+
 ;; headers as c++
 (setq include-base-dir "/usr/include/")
 
@@ -28,3 +31,21 @@
   )
 
 (add-hook 'c++-mode-hook 'my-cxx-style)
+
+(defun c-ts-indent-style()
+  "Override the built-in BSD indentation style with some additional rules"
+  `( ;; align function arguments to the start of the first one, offset if standalone
+    ((match nil "argument_list" nil 1 1) parent-bol c-ts-mode-indent-offset)
+    ((parent-is "argument_list") (nth-sibling 1) 0)
+    ;; same for parameters
+    ((match nil "parameter_list" nil 1 1) parent-bol c-ts-mode-indent-offset)
+    ((parent-is "parameter_list") (nth-sibling 1) 0)
+    ;; indent inside case blocks
+    ((parent-is "case_statement") standalone-parent c-ts-mode-indent-offset)
+    ;; do not indent preprocessor statements
+    ((node-is "preproc") column-0 0)
+    ;; append to bsd style ,@
+    (alist-get 'bsd (c-ts-mode--indent-styles 'cpp))
+    ((n-p-gp nil nil "namespace_definition") grand-parent 0)))
+
+(setq c-ts-mode-indent-style #'c-ts-indent-style)
