@@ -1,11 +1,13 @@
 (prelude-require-packages '(lsp-mode
                             lsp-ui
                             lsp-treemacs
+                            lsp-sonarlint
                             helm-lsp))
 
 (require 'lsp-mode)
 (require 'lsp-ui)
 (require 'lsp-ui-imenu)
+(require 'lsp-sonarlint)
 
 (setq xref-prompt-for-identifier '(not xref-find-definitions
                                        xref-find-definitions-other-window
@@ -27,10 +29,13 @@
 (define-key lsp-ui-mode-map (kbd "C-c C-l e") 'helm-lsp-code-actions)
 
 (setq lsp-prefer-flymake nil)
+(setq lsp-ui-sideline-show-hover nil)
 ;; (setq lsp-ui-sideline-enable t)
 ;; (setq lsp-ui-doc-enable t)
 (setq lsp-ui-peek-enable t)
 (setq lsp-ui-peek-always-show t)
+
+(setq lsp-sonarlint-auto-download t)
 
 (add-hook 'c-mode-hook #'lsp)
 (add-hook 'c++-mode-hook #'lsp)
@@ -44,4 +49,5 @@
         "--completion-style=bundled"
         "--pch-storage=memory"
         "--header-insertion=never"
-        "--header-insertion-decorators=0"))
+        "--header-insertion-decorators=0")
+)
