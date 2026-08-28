@@ -14,13 +14,13 @@ it's quite big and not that useful.
 
     You can toggle the menu bar by pressing `F12`.
 
-Furthermore, Prelude 1.1 displays line numbers (via `global-nlinum-mode`), just
-like most "modern" editors and IDEs do these days. You can go back to the way
+Furthermore, Prelude displays line numbers (via `global-display-line-numbers-mode`),
+just like most "modern" editors and IDEs do these days. You can go back to the way
 things were by setting `prelude-minimalistic-ui` to `t` in `personal/preload` or
 by adding the following snippets to your personal config:
 
 ``` emacs-lisp
-(global-nlinum-mode -1)
+(global-display-line-numbers-mode -1)
 (menu-bar-mode -1)
 ```
 
@@ -28,6 +28,23 @@ by adding the following snippets to your personal config:
 
     The first approach is better as it would prevent those UI elements from
     appearing temporarily.
+
+## Welcome Screen
+
+On startup Prelude greets you with a welcome screen that points you at the
+essentials - where your personal configuration lives, how to enable modules,
+and the user manual - and gives you quick access to your recent files, known
+projects and bookmarks. It's skipped automatically when you start Emacs to open
+specific files (e.g. `emacs foo.rb`).
+
+You can bring it back at any time with `M-x prelude-welcome`.
+
+If you'd rather not see it, set `prelude-welcome-screen` to `nil` in
+`personal/preload`:
+
+``` emacs-lisp
+(setq prelude-welcome-screen nil)
+```
 
 ## Color Themes
 
@@ -161,6 +178,17 @@ If you prefer not to automatically format your file on save, you can disable tha
 ```
 
 Currently this only affects automated formatting of Typescript files.
+
+### Switch LSP client
+
+Prelude uses Eglot (built-in) as the default LSP client. If you prefer lsp-mode
+with its richer UI (peek views, sideline diagnostics), add to `personal/preload`:
+
+```emacs-lisp
+(setq prelude-lsp-client 'lsp-mode)
+```
+
+See the [LSP module documentation](modules/lsp.md) for details.
 
 ### Disable Super-based keybindings
 

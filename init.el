@@ -1,6 +1,6 @@
 ;;; init.el --- Prelude's configuration entry point.
 ;;
-;; Copyright (c) 2011-2025 Bozhidar Batsov
+;; Copyright (c) 2011-2026 Bozhidar Batsov
 ;;
 ;; Author: Bozhidar Batsov <bozhidar@batsov.com>
 ;; URL: https://github.com/bbatsov/prelude
@@ -45,8 +45,8 @@
 
 (message "[Prelude] Prelude is powering up... Be patient, Master %s!" prelude-user)
 
-(when (version< emacs-version "25.1")
-  (error "[Prelude] Prelude requires GNU Emacs 25.1 or newer, but you're running %s" emacs-version))
+(when (version< emacs-version "29.1")
+  (error "[Prelude] Prelude requires GNU Emacs 29.1 or newer, but you're running %s" emacs-version))
 
 ;; Always load newest byte code
 (setq load-prefer-newer t)
@@ -94,9 +94,8 @@ by Prelude.")
 (add-to-list 'load-path prelude-vendor-dir)
 (prelude-add-subfolders-to-load-path prelude-vendor-dir)
 
-;; reduce the frequency of garbage collection by making it happen on
-;; each 50MB of allocated data (the default is on every 0.76MB)
-(setq gc-cons-threshold 50000000)
+;; the garbage collection threshold is tuned in early-init.el (raised
+;; during startup, restored to a modest value once startup is over)
 
 ;; warn when opening files bigger than 100MB
 (setq large-file-warning-threshold 100000000)
@@ -116,6 +115,7 @@ by Prelude.")
 (require 'prelude-mode)
 (require 'prelude-editor)
 (require 'prelude-global-keybindings)
+(require 'prelude-welcome)
 
 ;; macOS specific settings
 (when (eq system-type 'darwin)
@@ -154,12 +154,6 @@ by Prelude.")
                (directory-files prelude-personal-dir 't "^[^#\.].*\\.el$"))))
 
 (message "[Prelude] Prelude is ready to do thy bidding, Master %s!" prelude-user)
-
-;; Patch security vulnerability in Emacs versions older than 25.3
-(when (version< emacs-version "25.3")
-  (with-eval-after-load "enriched"
-    (defun enriched-decode-display-prop (start end &optional param)
-      (list start end))))
 
 (prelude-eval-after-init
  ;; greet the use with some useful tip

@@ -1,6 +1,6 @@
 ;;; prelude-mode.el --- Emacs Prelude: minor mode
 ;;
-;; Copyright © 2011-2025 Bozhidar Batsov
+;; Copyright © 2011-2026 Bozhidar Batsov
 ;;
 ;; Author: Bozhidar Batsov <bozhidar@batsov.com>
 ;; URL: https://github.com/bbatsov/prelude
@@ -29,9 +29,6 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;;; Code:
-(require 'easymenu)
-(require 'imenu-anywhere)
-(require 'crux)
 
 (defvar prelude-mode-map
   (let ((map (make-sparse-keymap)))
