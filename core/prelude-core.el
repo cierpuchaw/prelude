@@ -1,4 +1,4 @@
-;;; prelude-core.el --- Emacs Prelude: Core Prelude functions.
+;;; prelude-core.el --- Emacs Prelude: Core Prelude functions.  -*- lexical-binding: t; -*-
 ;;
 ;; Copyright © 2011-2026 Bozhidar Batsov
 ;;
@@ -49,7 +49,9 @@ PROMPT sets the `read-string prompt."
               (read-string prompt))))))
 
 (defmacro prelude-install-search-engine (search-engine-name search-engine-url search-engine-prompt)
-  "Given some information regarding a search engine, install the interactive command to search through them"
+  "Define `prelude-SEARCH-ENGINE-NAME', a command searching SEARCH-ENGINE-URL.
+The command prompts with SEARCH-ENGINE-PROMPT for the query, defaulting
+to the active region."
   `(defun ,(intern (format "prelude-%s" search-engine-name)) ()
        ,(format "Search %s with a query or region if any." search-engine-name)
        (interactive)
@@ -111,6 +113,12 @@ PROMPT sets the `read-string prompt."
     (when after-init-time
       (eval form))))
 
+(defun prelude-fetch-shell-environment-p ()
+  "Return non-nil if Emacs needs to get its environment from the shell.
+That's the case for GUI frames and daemons, which don't inherit it the
+way Emacs started from a terminal does."
+  (or (memq window-system '(mac ns x pgtk)) (daemonp)))
+
 (defun prelude-update ()
   "Update Prelude to its latest version."
   (interactive)
@@ -118,20 +126,25 @@ PROMPT sets the `read-string prompt."
     (message "Updating installed packages...")
     (package-upgrade-all)
     (message "Updating Prelude...")
-    (cd prelude-dir)
-    (shell-command "git pull")
+    (let ((default-directory prelude-dir)
+          (output (get-buffer-create "*prelude-update*")))
+      (with-current-buffer output (erase-buffer))
+      (unless (zerop (call-process "git" nil output nil "pull" "--ff-only"))
+        (display-buffer output)
+        (user-error "Updating Prelude with `git pull --ff-only' failed, see *prelude-update* for details")))
     (prelude-recompile-init)
     (message "Update finished. Restart Emacs to complete the process.")))
 
 (defun prelude-update-packages (&optional arg)
   "Update Prelude's packages.
-This includes packages installed via `prelude-require-package'.
+This covers every package Prelude installs (see `prelude-packages').
 
 With a prefix ARG updates all installed packages."
   (interactive "P")
   (when (y-or-n-p "Do you want to update Prelude's packages? ")
     (if arg
         (package-upgrade-all)
+      (package-refresh-contents)
       (dolist (package prelude-packages)
         (when (package-installed-p package)
           (package-upgrade package))))
@@ -143,54 +156,158 @@ With a prefix ARG updates all installed packages."
      (interactive "P")
      (sp-wrap-with-pair ,s)))
 
-(defun prelude-treesit-remap (grammar old-mode new-mode)
-  "Remap OLD-MODE to NEW-MODE when tree-sitter GRAMMAR is available.
-Does nothing if Emacs was compiled without tree-sitter support."
-  (require 'treesit nil t)
-  (when (and (fboundp 'treesit-ready-p)
-             (treesit-ready-p grammar t))
-    (add-to-list 'major-mode-remap-alist (cons old-mode new-mode))))
+(defvar prelude-conflicting-modules
+  '((prelude-ido prelude-ivy prelude-vertico prelude-helm)
+    (prelude-company prelude-corfu))
+  "Groups of modules that do the same job and shouldn't be enabled together.")
 
-;; Grammar recipes for the languages Prelude's modules know about, so a
-;; missing grammar can be installed with `M-x treesit-install-language-grammar'
-;; (or `treesit-install-language-grammar' for the whole set) instead of
-;; hunting down repository URLs.  Add your own recipes from personal config.
-(when (require 'treesit nil t)
-  (dolist (recipe
-           '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-             (c "https://github.com/tree-sitter/tree-sitter-c")
-             (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
-             (css "https://github.com/tree-sitter/tree-sitter-css")
-             (elixir "https://github.com/elixir-lang/tree-sitter-elixir")
-             (go "https://github.com/tree-sitter/tree-sitter-go")
-             (gomod "https://github.com/camdencheek/tree-sitter-go-mod")
-             (heex "https://github.com/phoenixframework/tree-sitter-heex")
-             (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
-             (json "https://github.com/tree-sitter/tree-sitter-json")
-             (python "https://github.com/tree-sitter/tree-sitter-python")
-             (ruby "https://github.com/tree-sitter/tree-sitter-ruby")
-             (rust "https://github.com/tree-sitter/tree-sitter-rust")
-             (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-             (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-             (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-    (add-to-list 'treesit-language-source-alist recipe)))
+(defun prelude-check-module-conflicts ()
+  "Warn about enabled modules that conflict with each other.
+See `prelude-conflicting-modules'."
+  (dolist (group prelude-conflicting-modules)
+    (let ((enabled (seq-filter #'featurep group)))
+      (when (cdr enabled)
+        (display-warning
+         'prelude
+         (format "Modules %s do the same job, keep only one of them in %s"
+                 (mapconcat #'symbol-name enabled ", ")
+                 prelude-modules-file))))))
 
-(defun prelude-lsp-enable ()
-  "Enable the LSP client configured via `prelude-lsp-client'."
+(defvar eglot-server-programs)
+(defvar lsp-enable-suggest-server-download)
+(defvar lsp-warn-no-matched-clients)
+
+(defvar prelude-lsp--reported-modes nil
+  "Major modes we've already reported a missing language server for.")
+
+(defun prelude-lsp--eglot-contact ()
+  "Return the `eglot-server-programs' entry for the current major mode."
+  (seq-some
+   (pcase-lambda (`(,modes . ,contact))
+     ;; MODES is a mode, a (MODE :language-id ID) spec, or a list of those
+     (when (seq-some (lambda (mode)
+                       (derived-mode-p (if (consp mode) (car mode) mode)))
+                     (if (or (symbolp modes) (keywordp (cadr modes)))
+                         (list modes)
+                       modes))
+       contact))
+   eglot-server-programs))
+
+(defun prelude-lsp--eglot-missing-server ()
+  "Return a description of what's missing if Eglot can't start a server here.
+Return nil if the language server of the current buffer seems to be
+installed, or if there's no way to tell without starting it."
+  (require 'eglot)
+  (let ((contact (prelude-lsp--eglot-contact)))
+    (condition-case err
+        (progn
+          ;; `eglot-alternatives' gives us a function that picks the
+          ;; first of several servers that's installed, and signals an
+          ;; error if none of them is.  Named functions are the entry
+          ;; points of packages that install the server on demand, so
+          ;; those are left alone.
+          (when (and (functionp contact) (not (symbolp contact)))
+            (setq contact
+                  (if (eql (cdr (func-arity contact)) 1)
+                      (funcall contact nil)
+                    ;; Eglot 1.17+ passes the project as well
+                    (funcall contact nil
+                             (or (project-current)
+                                 (cons 'transient default-directory))))))
+          ;; skip the class of the server
+          (when (and (consp contact) (symbolp (car contact))
+                     (not (keywordp (car contact))))
+            (setq contact (cdr contact)))
+          (cond
+           ((null contact)
+            (format-message "Eglot doesn't know a language server for `%s'"
+                            major-mode))
+           ;; (PROGRAM ARGS...), as opposed to (HOST PORT)
+           ((and (consp contact) (stringp (car contact))
+                 (not (integerp (cadr contact)))
+                 (not (executable-find (car contact))))
+            (format-message "`%s' isn't installed" (car contact)))))
+      ;; Only a plain error (which is what `eglot-alternatives' signals)
+      ;; tells us something.  If the function failed in any other way
+      ;; we can't tell, and it's Eglot's job to deal with that.
+      (error (and (eq (car err) 'error)
+                  (error-message-string err))))))
+
+(defun prelude-lsp--eglot-ensure (&optional quiet)
+  "Start Eglot in the current buffer, unless its server isn't installed.
+Eglot would complain about that for every file you open, while we
+mention it just once for a major mode, and not at all if QUIET is
+non-nil."
+  (when buffer-file-name
+    ;; looking for programs on a remote host is slow, so that's left to
+    ;; Eglot, which does it only once you start working with the buffer
+    (let ((missing (unless (file-remote-p default-directory)
+                     (prelude-lsp--eglot-missing-server))))
+      (cond
+       ((not missing) (eglot-ensure))
+       ((not (or quiet (memq major-mode prelude-lsp--reported-modes)))
+        (push major-mode prelude-lsp--reported-modes)
+        (message "[Prelude] No language server for `%s' buffers: %s"
+                 major-mode missing))))))
+
+(defun prelude-lsp-enable (&optional quiet)
+  "Enable the LSP client configured via `prelude-lsp-client'.
+With Eglot nothing happens when the language server of the buffer isn't
+installed, apart from a message the first time that's noticed.
+
+If QUIET is non-nil a missing language server isn't mentioned at all.
+That's for the kinds of files that people edit all the time without
+having any use for a language server (configuration files, shell
+scripts, etc)."
   (pcase prelude-lsp-client
-    ('eglot (eglot-ensure))
+    ('eglot (prelude-lsp--eglot-ensure quiet))
     ('lsp-mode
      (require 'prelude-lsp-mode)
+     (when quiet
+       (setq-local lsp-warn-no-matched-clients nil
+                   lsp-enable-suggest-server-download nil))
      (lsp-deferred))))
 
+(defun prelude-format-on-save-p ()
+  "Return non-nil if a module should format the buffer when it's saved.
+That's not the case when `prelude-format-on-save' is off, or when
+Apheleia is already taking care of the formatting."
+  (and prelude-format-on-save
+       (not (bound-and-true-p apheleia-mode))))
+
+(defun prelude-lsp-format-on-save ()
+  "Format the buffer with its language server, if there's one running.
+Meant for `before-save-hook'.  See `prelude-format-on-save-p'."
+  (when (prelude-format-on-save-p)
+    ;; a failed request shouldn't get in the way of saving the file
+    (with-demoted-errors "[Prelude] Couldn't format the buffer: %S"
+      (cond
+       ((and (fboundp 'eglot-managed-p) (eglot-managed-p))
+        (eglot-format-buffer))
+       ((bound-and-true-p lsp-mode)
+        (lsp-format-buffer))))))
+
 ;; Eglot configuration
+(defvar eglot-autoshutdown)
+(defvar eglot-events-buffer-config)
+(defvar eglot-extend-to-xref)
+(defvar eglot-mode-map)
+(declare-function eglot-code-action-organize-imports "eglot")
+(declare-function eglot-code-actions "eglot")
+(declare-function eglot-format-buffer "eglot")
+(declare-function eglot-managed-p "eglot")
+(declare-function lsp-format-buffer "lsp-mode")
+(declare-function eglot-rename "eglot")
+
 (with-eval-after-load 'eglot
   (setq eglot-autoshutdown t)
   ;; don't log every LSP event - the logging adds overhead with chatty
   ;; servers (set these back when you need to debug an LSP session)
   (if (boundp 'eglot-events-buffer-config)
       (setq eglot-events-buffer-config '(:size 0 :format full)) ; newer Eglot
-    (setq eglot-events-buffer-size 0))                          ; older Eglot
+    (with-suppressed-warnings ((obsolete eglot-events-buffer-size)
+                               (free-vars eglot-events-buffer-size))
+      (setq eglot-events-buffer-size 0)))                       ; older Eglot
   (setq eglot-extend-to-xref t)
 
   (define-key eglot-mode-map (kbd "C-c C-l r") #'eglot-rename)

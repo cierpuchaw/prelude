@@ -1,4 +1,4 @@
-;;; prelude-css.el --- Emacs Prelude: css support
+;;; prelude-css.el --- Emacs Prelude: css support  -*- lexical-binding: t; -*-
 ;;
 ;; Copyright © 2011-2026 Bozhidar Batsov
 ;;
@@ -30,6 +30,8 @@
 
 ;;; Code:
 
+(require 'prelude-programming)
+
 ;; Use css-ts-mode when the tree-sitter grammar is available
 (prelude-treesit-remap 'css 'css-mode 'css-ts-mode)
 
@@ -42,9 +44,9 @@
 
 (defun prelude-css-mode-defaults ()
   (rainbow-mode +1)
-  (run-hooks 'prelude-prog-mode-hook))
+  (prelude-lsp-enable 'quiet))
 
-(setq prelude-css-mode-hook 'prelude-css-mode-defaults)
+(add-hook 'prelude-css-mode-hook #'prelude-css-mode-defaults)
 
 (add-hook 'css-mode-hook (lambda ()
                            (run-hooks 'prelude-css-mode-hook)))

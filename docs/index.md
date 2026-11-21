@@ -74,6 +74,7 @@ many more packages available via optional modules.
 The following programming languages have enhanced support in Prelude:
 
 - [C/C++](modules/c.md)
+- [C#](modules/csharp.md)
 - [Clojure](modules/clojure.md)
 - [Common Lisp](modules/common_lisp.md)
 - [CSS](modules/css.md)
@@ -84,12 +85,18 @@ The following programming languages have enhanced support in Prelude:
 - [F#](modules/fsharp.md)
 - [Go](modules/go.md)
 - [Haskell](modules/haskell.md)
+- [Java](modules/java.md)
 - [JavaScript](modules/js.md)
+- [Julia](modules/julia.md)
+- [Kotlin](modules/kotlin.md)
 - [LaTeX](modules/latex.md)
 - [Lua](modules/lua.md)
+- [Nix](modules/nix.md)
 - [OCaml](modules/ocaml.md)
 - [Perl](modules/perl.md)
+- [PHP](modules/php.md)
 - [Python](modules/python.md)
+- [R](modules/r.md)
 - [Racket](modules/racket.md)
 - [Ruby](modules/ruby.md)
 - [Rust](modules/rust.md)
@@ -97,10 +104,14 @@ The following programming languages have enhanced support in Prelude:
 - [Scheme](modules/scheme.md)
 - [SCSS](modules/scss.md)
 - [Shell](modules/shell.md)
+- [SQL](modules/sql.md)
+- [Swift](modules/swift.md)
+- [Terraform](modules/terraform.md)
 - [TypeScript](modules/ts.md)
 - [Web/HTML](modules/web.md)
 - [XML](modules/xml.md)
 - [YAML](modules/yaml.md)
+- [Zig](modules/zig.md)
 
 On top of this - basic support for many other programming languages
 will be auto-installed when needed (e.g. the first time you open a

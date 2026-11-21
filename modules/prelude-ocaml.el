@@ -1,4 +1,4 @@
-;;; prelude-ocaml.el --- Emacs Prelude: OCaml programming support.
+;;; prelude-ocaml.el --- Emacs Prelude: OCaml programming support.  -*- lexical-binding: t; -*-
 ;;
 ;; Copyright © 2014-2026 Geoff Shannon
 ;;
@@ -38,9 +38,12 @@
 (defun prelude-ocaml-mode-defaults ()
   ;; CamelCase aware editing operations
   (subword-mode +1)
-  (when (eq prelude-lsp-client 'eglot)
-    ;; ocaml-eglot-mode adds OCaml-specific LSP commands
-    ;; (switch .ml/.mli, type-enclosing, destruct, etc.)
+  ;; ocaml-eglot-mode adds OCaml-specific LSP commands
+  ;; (switch .ml/.mli, type-enclosing, destruct, etc.).  Check that
+  ;; it's actually available, as a failed install would otherwise
+  ;; break the whole mode hook.
+  (when (and (eq prelude-lsp-client 'eglot)
+             (fboundp 'ocaml-eglot-mode))
     (ocaml-eglot-mode 1))
   ;; Start the LSP server (eglot-ensure or lsp-deferred)
   (prelude-lsp-enable))
@@ -51,7 +54,8 @@
 ;; get the same setup.
 (use-package neocaml
   :ensure t
-  :hook (neocaml-base-mode . prelude-ocaml-mode-defaults)
+  :hook (neocaml-base-mode . (lambda ()
+                               (run-hooks 'prelude-ocaml-mode-hook)))
   :config
   ;; Workaround: register neocaml modes with eglot until neocaml
   ;; ships this fix itself (neocaml >= 20260331).  add-to-list is
@@ -69,10 +73,12 @@
 
 ;; OCaml-specific Eglot extensions (requires ocaml-lsp-server).
 ;; Only installed when Eglot is the configured LSP client.
-(use-package ocaml-eglot
-  :ensure t
-  :defer t
-  :if (eq prelude-lsp-client 'eglot))
+(when (eq prelude-lsp-client 'eglot)
+  (use-package ocaml-eglot
+    :ensure t
+    :defer t))
+
+(add-hook 'prelude-ocaml-mode-hook #'prelude-ocaml-mode-defaults)
 
 (provide 'prelude-ocaml)
 

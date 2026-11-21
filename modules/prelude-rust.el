@@ -1,4 +1,4 @@
-;;; prelude-rust.el --- Emacs Prelude: Rust programming support.
+;;; prelude-rust.el --- Emacs Prelude: Rust programming support.  -*- lexical-binding: t; -*-
 ;;
 ;; Authors: Doug MacEachern, Manoel Vilela, Ben Alex, Daniel Gerlach
 
@@ -39,14 +39,11 @@
 ;; Disable super-save in Rust buffers -- auto-saving triggers
 ;; lsp-format-buffer which causes severe hangs during autocomplete
 (add-to-list 'super-save-predicates
-             (lambda () (not (eq major-mode 'rust-ts-mode))))
+             (lambda () (not (derived-mode-p 'rust-ts-mode 'rust-mode))))
 
 (defun prelude-rust-mode-defaults ()
-  (setq rust-format-on-save t)
-
-  ;; Rust files start with #![...] (inner attributes), which looks
-  ;; like a shebang to Emacs -- prevent auto-chmod on save
-  (remove-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+  ;; format before save (rust-analyzer runs rustfmt)
+  (add-hook 'before-save-hook #'prelude-lsp-format-on-save nil t)
 
   ;; CamelCase aware editing operations
   (subword-mode +1)
@@ -54,6 +51,9 @@
   (prelude-lsp-enable))
 
 ;; Built-in tree-sitter mode for Rust (requires rust grammar)
+;; (rust-mode is only used if it's installed, e.g. from older Preludes)
+(prelude-treesit-auto-mode "\\.rs\\'" 'rust 'rust-ts-mode 'rust-mode)
+
 (use-package rust-ts-mode
   :ensure t
   :hook (rust-ts-mode . (lambda () (run-hooks 'prelude-rust-mode-hook))))
@@ -73,7 +73,7 @@
   :ensure t
   :defer t)
 
-(setq prelude-rust-mode-hook 'prelude-rust-mode-defaults)
+(add-hook 'prelude-rust-mode-hook #'prelude-rust-mode-defaults)
 
 (provide 'prelude-rust)
 ;;; prelude-rust.el ends here

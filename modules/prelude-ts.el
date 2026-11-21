@@ -1,4 +1,4 @@
-;;; prelude-ts.el --- Emacs Prelude: TypeScript programming support.
+;;; prelude-ts.el --- Emacs Prelude: TypeScript programming support.  -*- lexical-binding: t; -*-
 ;;
 ;; Copyright © 2023-2026 LEE Dongjun
 ;;
@@ -34,21 +34,23 @@
 (require 'prelude-programming)
 
 ;; Use typescript-ts-mode when the tree-sitter grammar is available
-(require 'treesit nil t)
-(when (and (fboundp 'treesit-ready-p) (treesit-ready-p 'typescript t))
-  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode)))
+;; (typescript-mode is only used if it's installed, e.g. from older Preludes)
+(prelude-treesit-auto-mode "\\.ts\\'" 'typescript 'typescript-ts-mode 'typescript-mode)
+(prelude-treesit-auto-mode "\\.tsx\\'" 'tsx 'tsx-ts-mode 'typescript-mode)
 
 (defun prelude-ts-mode-defaults ()
   (subword-mode +1)
   (prelude-lsp-enable))
 
-(setq prelude-ts-mode-hook 'prelude-ts-mode-defaults)
+(add-hook 'prelude-ts-mode-hook #'prelude-ts-mode-defaults)
 
 (add-hook 'typescript-ts-mode-hook (lambda ()
                                      (run-hooks 'prelude-ts-mode-hook)))
 (add-hook 'tsx-ts-mode-hook (lambda ()
                               (run-hooks 'prelude-ts-mode-hook)))
+;; the fallback, for those who have it installed
+(add-hook 'typescript-mode-hook (lambda ()
+                                  (run-hooks 'prelude-ts-mode-hook)))
 
 (provide 'prelude-ts)
 

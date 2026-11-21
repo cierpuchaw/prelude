@@ -1,4 +1,4 @@
-;;; prelude-common-lisp.el --- Emacs Prelude: lisp-mode and SLIME config.
+;;; prelude-common-lisp.el --- Emacs Prelude: lisp-mode and SLIME config.  -*- lexical-binding: t; -*-
 ;;
 ;; Copyright © 2011-2026 Bozhidar Batsov
 ;;
@@ -29,6 +29,9 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;;; Code:
+
+(defvar inferior-lisp-program)
+(declare-function slime-connected-p "slime")
 
 (require 'prelude-lisp)
 
@@ -84,7 +87,8 @@
   ;; configure the REPL hooks directly instead of using
   ;; prelude-lisp-coding-defaults.
   (add-hook 'slime-repl-mode-hook (lambda ()
-                                    (smartparens-strict-mode +1)
+                                    (when prelude-smartparens
+                                      (smartparens-strict-mode +1))
                                     (whitespace-mode -1))))
 
 (provide 'prelude-common-lisp)
