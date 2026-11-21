@@ -1,11 +1,5 @@
 ;;; -*- lexical-binding: t; -*-
-(prelude-require-packages '(treesit-auto
-                            ))
-
-(require 'treesit-auto)
-
-(setq treesit-auto-install 't)
-(global-treesit-auto-mode)
+(setq prelude-treesit-auto-install 'always)
 
 (setq c-ts-mode-hook c-mode-hook)
 (setq c++-ts-mode-hook c++-mode-hook)
