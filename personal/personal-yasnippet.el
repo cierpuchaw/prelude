@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (prelude-require-packages '(yasnippet
                             yasnippet-snippets
                             ))

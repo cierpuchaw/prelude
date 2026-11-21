@@ -1,4 +1,4 @@
-;;; cram-test-mode.el --- highlight mode for Cram tests
+;;; cram-test-mode.el --- highlight mode for Cram tests  -*- lexical-binding: t; -*-
 
 ;; Copyright (c) 2016 Miron Moderau
 

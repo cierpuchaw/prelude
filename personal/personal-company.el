@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (prelude-require-packages '(company-c-headers
                             ))
 

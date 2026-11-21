@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (prelude-require-packages '(yaml-mode
                             highlight-indent-guides
                             ))

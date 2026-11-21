@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (prelude-require-packages '(lsp-mode
                             lsp-ui
                             lsp-treemacs

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (require 'ansi-color)
 
 (setq compilation-error-regexp-alist
